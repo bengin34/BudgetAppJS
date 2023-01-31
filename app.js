@@ -15,36 +15,33 @@
     let itemID = 0;
     let itemList = [];
 
-    // //new instance of UI Class
-    // const inst = new UI();
 
-
-  //budget form submit
   budgetForm.addEventListener('submit', e =>{
     e.preventDefault();
     submitBudgetForm();
   })
   
-  //expense form submit 
+
   expenseForm.addEventListener('submit', e =>{
     e.preventDefault();
     submitExpenseForm();
 
   })
   
-  //expense list submit
   
   expenseList.addEventListener('click', e =>{
     if(e.target.parentElement.classList.contains('edit-icon')){
       editExpense(e.target.parentElement);
+      expenseInput.focus();
+      showBalance();
     }else if (e.target.parentElement.classList.contains('delete-icon')){
-  
+      removeExpense(e.target.parentElement)
+      showBalance();
     }
   })
   
 
 
-  //submit budget method
   
   function submitBudgetForm(){
     const value = budgetInput.value;
@@ -54,7 +51,7 @@
       
       setTimeout(function(){
       budgetFeedback.classList.remove('showItem');
-      }, 3000);
+      }, 2000);
     } else {
       budgetAmount.textContent = value;
       budgetInput.value = '';
@@ -62,11 +59,13 @@
     }
   }
   
-// show balance
+
 function  showBalance(){
     let expense = totalExpense();
     let total = parseInt(budgetAmount.innerText) - expense;
+
     balanceAmount.textContent = total;
+    
     if(total < 0){
       balance.classList.remove('showGreen','showBlack')
       balance.classList.remove('showRed')
@@ -77,10 +76,9 @@ function  showBalance(){
       balance.classList.remove('showRed','showGreen');
       balance.classList.add('showBlack');
     }
-    
   }
-  
-//submit expense form 
+
+
 function   submitExpenseForm(){
     const expenseValue =expenseInput.value;
     const amountValue =amountInput.value;
@@ -96,21 +94,21 @@ function   submitExpenseForm(){
       expenseInput.value = '';
       amountInput.value = '';
      
-      //!define new element as an expense
+      //todo new element as an expense
       let expense = {
         id:itemID,
         title: expenseValue,
         amount: amount
       }
+
       itemID++;
-      itemList.push(expense);
+      // itemList.push(expense);
+      itemList = [expense,...itemList]
       addExpense(expense);
       showBalance();
 
   }
 }
-
-//add expense
 
 function   addExpense(expense){
     const expenseDiv = document.createElement('div');
@@ -132,34 +130,41 @@ function   addExpense(expense){
   }
 
 
-  //total expense
   function   totalExpense(){
+    let total = 0;
       if(itemList.length > 0){
-      
+      total = itemList.reduce(function(acc,curr){
+        acc += curr.amount
+        return acc;
+      },0)
       }
-     
-    
+      expenseAmount.innerHTML = total
+      return total;
     }
 
-    // edit expense 
 
-    function editExpense(){
+    function editExpense(element){
       let id = parseInt(element.dataset.id);
-      let parent = element.parentElement.parentelement.parentElement;
-      //remove from DOM
+      let parent = element.parentElement.parentElement.parentElement;
       expenseList.removeChild(parent);
-      //remove from the list
+    
+      let expense = itemList.filter(item => item.id === id)
+      expenseInput.value = expense[0].title;
+      amountInput.value = expense[0].amount;
     let tempList = itemList.filter(item => {
       return item.id !==id;
     })
     itemList = tempList;
     showBalance();
     }
-  
-    
 
-  
+  function removeExpense(element){
+    let id = parseInt(element.dataset.id)
+    let parent = element.parentElement.parentElement.parentElement;
 
+    expenseList.removeChild(parent);
   
-
-  
+    let tempList = itemList.filter(item => item.id !== id)
+    itemList = tempList;
+    showBalance();
+  }
